@@ -1,1 +1,3 @@
-# Diffusion-studies
+# Diffusion studies
+
+Particle diffusion studies at ePIC.
