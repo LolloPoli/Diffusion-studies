@@ -205,8 +205,16 @@ TString infile3="pythia8NCDIS_18x275_minQ2=1_beamEffects_xAngle=-0.025_hiDiv_4.1
     TH2D *pion_MomVsPhi_rec = new TH2D("pion_MomVsPhi_rec", "Mom vs Phi (Polar) | pion | y<0.95; Phi [Deg]; Mom [GeV]", nben, 3, 25, nben, log_bins_Mom.data());
     TH2D *pion_PhTvsZ = new TH2D("pion_PhTvsZ", "Z vs PhT | pion | y<0.95; z; PhT [GeV]", nben, log_bins_z2.data(), nben, log_bins_PhT2.data());
     TH2D *pion_PhTvsZ_rec = new TH2D("pion_PhTvsZ_rec", "Z vs PhT | pion | y<0.95; z; PhT [GeV]", nben, log_bins_z2.data(), nben, log_bins_PhT2.data());
-    TH2D *pion_MomVsTheta = new TH2D("pion_MomVsTheta", "Mom vs Theta (Azimuth) | pion | y<0.95; Theta [Deg]; Mom [GeV]", nben, 0, 180, nben, log_bins_Mom.data());
-    TH2D *pion_MomVsTheta_rec = new TH2D("pion_MomVsTheta_rec", "Mom vs Theta (Azimuth) | pion | y<0.95; Theta [Deg]; Mom [GeV]", nben, 0, 180, nben, log_bins_Mom.data());
+    TH2D *pion_MomVsTheta = new TH2D("pion_MomVsTheta", "Mom vs Theta (Azimuth) | pion | y<0.95; Theta [Deg]; Mom [GeV]", nben, -90, 90, nben, log_bins_Mom.data());
+    TH2D *pion_MomVsTheta_rec = new TH2D("pion_MomVsTheta_rec", "Mom vs Theta (Azimuth) | pion | y<0.95; Theta [Deg]; Mom [GeV]", nben, -90, 90, nben, log_bins_Mom.data());
+    TH2D *pion_ThetaVsPhi = new TH2D("pion_ThetaVsPhi", "Theta (Azimuth) vs Phi (Polar) | pion | y<0.95; Theta [Deg]; Phi [Deg]", nben, -90, 90, nben, 0, 25);
+    TH2D *pion_ThetaVsPhi_rec = new TH2D("pion_ThetaVsPhi_rec", "Theta (Azimuth) vs Phi (Polar) | pion | y<0.95; Theta [Deg]; Phi [deg]", nben, -90, 90, nben, 0, 25);
+    TH2D *pion_PhTvsPhi = new TH2D("pion_PhTvsPhi", "Phi (Polar) vs PhT | pion | y<0.95; Phi [Deg]; PhT [GeV]", nben, 3, 25, nben, log_bins_PhT2.data());
+    TH2D *pion_PhTvsPhi_rec = new TH2D("pion_PhTvsPhi_rec", "Phi (Polar) vs PhT | pion | y<0.95; Phi [Deg]; PhT [GeV]", nben, 3, 25, nben, log_bins_PhT2.data());
+    TH2D *pion_PhTvsTheta = new TH2D("pion_PhTvsTheta", "Theta (Azimuth) vs PhT | pion | y<0.95; Theta [Deg]; PhT [GeV]", nben, -90, 90, nben, log_bins_PhT2.data());
+    TH2D *pion_PhTvsTheta_rec = new TH2D("pion_PhTvsTheta_rec", "Theta (Azimuth) vs PhT | pion | y<0.95; Theta [Deg]; PhT [GeV]", nben, -90, 90, nben, log_bins_PhT2.data());
+    TH2D *pion_PhTVsEta = new TH2D("pion_PhTVsEta", "PhRT vs Eta | pion | y<0.95; Eta; PhT [GeV]", nben, 1.5, 3.5, nben, log_bins_PhT2.data());
+    TH2D *pion_PhTVsEta_rec = new TH2D("pion_PhTVsEta_rec", "PhT vs Eta | pion | y<0.95; Eta; PhT [GeV]", nben, 1.5, 3.5, nben, log_bins_PhT2.data());
 
     TH2D *kaon_MomVsEta = new TH2D("kaon_MomVsEta", "Mom vs Eta | kaon | y<0.95; Eta; Mom [GeV]", nben, 1.5, 3.5, nben, log_bins_Mom.data());
     TH2D *kaon_MomVsPhi = new TH2D("kaon_MomVsPhi", "Mom vs Phi (Polar) | kaon | y<0.95; Phi [Deg]; Mom [GeV]", nben, 3, 25, nben, log_bins_Mom.data());
@@ -218,6 +226,14 @@ TString infile3="pythia8NCDIS_18x275_minQ2=1_beamEffects_xAngle=-0.025_hiDiv_4.1
     TH2D *proton_MomVsEta_rec = new TH2D("proton_MomVsEta_rec", "Mom vs Eta | proton | y<0.95; Eta; Mom [GeV]", nben, 1.5, 3.5, nben, log_bins_Mom.data());
     TH2D *proton_MomVsPhi_rec = new TH2D("proton_MomVsPhi_rec", "Mom vs Phi (Polar) | proton | y<0.95; Phi [Deg]; Mom [GeV]", nben, 3, 25, nben, log_bins_Mom.data());
     
+    //PROVA DI TH3D
+    int nban = 30;
+    std::vector<double> log_bins_Mom2 = CreateLogBinning(nban, xmin_mom, xmax_mom);
+    TH3D *pion_MomVsPhiVsTheta = new TH3D("pion_MomVsPhiVsTheta", 
+    "Mom vs Phi (Polar) vs Theta (Azimuth) | pion | y<0.95; Theta [Deg]; Mom [GeV]; Phi [Deg]", 
+    nban, -90, 90, nban, 0, 1, nban, 0, 25);
+    pion_MomVsPhiVsTheta->GetYaxis()->Set(nban, log_bins_Mom2.data());
+
       
     // "REAL"
     TH1D *RealpionQ2 = new TH1D("RealpionQ2", "Real reconstruction of Pions+ in function of Q^2; GeV^2",  nbins, log_bins_Q2.data());
@@ -366,7 +382,7 @@ TString infile3="pythia8NCDIS_18x275_minQ2=1_beamEffects_xAngle=-0.025_hiDiv_4.1
 
                   if(pionEta > 1.5 && pionEta <= 3.5){
                     double pionPhiRad = truePionMom.Theta(); // MOLTO CONFUSO LO SO, PHI (MIO) ANGOLO POLARE
-                    double pionThetaRad = truePionMom.Phi(); // THETA ANGOLO AZIMUTALE 
+                    double pionThetaRad = 0.5*truePionMom.Phi(); // THETA ANGOLO AZIMUTALE 
                     float pionPhi = pionPhiRad * (180.0 / TMath::Pi());
                     float pionTheta = pionThetaRad * (180.0 / TMath::Pi());
                     TLorentzVector scatElpion(currentMom, currentQ2pion.X(), currentQ2pion.Y(), currentQ2pion.Z());
@@ -396,7 +412,7 @@ TString infile3="pythia8NCDIS_18x275_minQ2=1_beamEffects_xAngle=-0.025_hiDiv_4.1
 
                             if(recpionEta <= 3.5 && recpionEta > 1.5){
                               double recpPhi = recPionMom.Theta();
-                              double recpTheta = recPionMom.Phi();
+                              double recpTheta = 0.5*recPionMom.Phi();
                               float recpionTheta = recpTheta * (180.0 / TMath::Pi());
                               float recpionPhi = recpPhi * (180.0 / TMath::Pi());
                               TLorentzVector scatElpion_Rec(currentMom, currentQ2pion.X(), currentQ2pion.Y(), currentQ2pion.Z());
@@ -419,9 +435,13 @@ TString infile3="pythia8NCDIS_18x275_minQ2=1_beamEffects_xAngle=-0.025_hiDiv_4.1
                                     RecpionEta->Fill(recpionEta);
                                     RecpionPhi->Fill(recpionPhi);
                                     pion_MomVsEta_rec->Fill(recpionEta, mom_pion_Rec);
+                                    pion_PhTVsEta_rec->Fill(recpionEta, PhT_pion_Rec);
                                     pion_MomVsPhi_rec->Fill(recpionPhi, mom_pion_Rec);
                                     pion_PhTvsZ_rec->Fill(z_DA_pion_Rec, PhT_pion_Rec);
                                     pion_MomVsTheta_rec->Fill(recpionTheta, mom_pion_Rec);
+                                    pion_ThetaVsPhi_rec->Fill(recpionTheta,recpionPhi);
+                                    pion_PhTvsPhi_rec->Fill(recpionPhi, PhT_pion_Rec);
+                                    pion_PhTvsTheta_rec->Fill(recpionTheta, PhT_pion_Rec);
 
                                     if(recpdg==pdg){
                                       RealpionQ2->Fill(Q2_DA_pion_Rec);
@@ -466,11 +486,15 @@ TString infile3="pythia8NCDIS_18x275_minQ2=1_beamEffects_xAngle=-0.025_hiDiv_4.1
                                 truepion_mom->Fill(mom_pion);
                                 xQplane->Fill(xbj_DA_pion, Q2_DA_pion);
                                 pion_MomVsEta->Fill(pionEta, mom_pion);
+                                pion_PhTVsEta->Fill(pionEta, PhT_pion);
                                 pion_MomVsPhi->Fill(pionPhi, mom_pion);
                                 pion_PhTvsZ->Fill(z_DA_pion, PhT_pion);
                                 pion_MomVsTheta->Fill(pionTheta, mom_pion);
+                                pion_ThetaVsPhi->Fill(pionTheta,pionPhi);
+                                pion_PhTvsPhi->Fill(pionPhi, PhT_pion);
+                                pion_PhTvsTheta->Fill(pionTheta, PhT_pion);
+                                pion_MomVsPhiVsTheta->Fill(pionTheta, mom_pion, pionPhi);
                             }
-                        
                         }
                     }
                   }
