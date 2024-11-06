@@ -809,17 +809,17 @@ int gatto() {
 
     // ______________________________________________________________ Phi _____________________________________________________________
 
-    TH1D *pionPhi = new TH1D("pionPhi", "Efficiency reconstruction with MC ID  |  Phi  |  18x275 GeV", 80, 0, 25);
+    TH1D *pionPhi = new TH1D("pionPhi", "Efficiency reconstruction with MC ID  |  Phi  |  18x275 GeV", 80, 3, 25);
     pionPhi->Divide(pion62, pion61);
     pionPhi->SetLineColor(kRed);
     pionPhi->SetStats(kFALSE);
     pionPhi->GetXaxis()->SetTitle("Phi [Deg]");
     pionPhi->GetYaxis()->SetTitle("Rec / MC events");
     pionPhi->GetYaxis()->SetRangeUser(0, 1.2);
-    TH1D *kaonPhi = new TH1D("kaonPhi", "Ratio of Histograms", 80,  0, 25);
+    TH1D *kaonPhi = new TH1D("kaonPhi", "Ratio of Histograms", 80,  3, 25);
     kaonPhi->Divide(kaon62,kaon61);
     kaonPhi->SetLineColor(kBlue);
-    TH1D *protonPhi = new TH1D("protonPhi", "Ratio of Histograms", 80,  0, 25);
+    TH1D *protonPhi = new TH1D("protonPhi", "Ratio of Histograms", 80,  3, 25);
     protonPhi->Divide(proton62,proton61);
     protonPhi->SetLineColor(kOrange);
 
@@ -831,14 +831,14 @@ int gatto() {
     
     Ratio_Phi->Write();
 
-    TH1D *pionPhi_ID = new TH1D("pionPhi_ID", "Reconstruction x PID efficiency  |  Phi  |  18x275 GeV", 80, 0, 25);
+    TH1D *pionPhi_ID = new TH1D("pionPhi_ID", "Reconstruction x PID efficiency  |  Phi  |  18x275 GeV", 80, 3, 25);
     pionPhi_ID->Divide(pion63, pion61);
     pionPhi_ID->SetLineColor(kRed);
     pionPhi_ID->SetStats(kFALSE);
     pionPhi_ID->GetXaxis()->SetTitle("Phi [Deg]");
     pionPhi_ID->GetYaxis()->SetTitle("Rec / MC events");
     pionPhi_ID->GetYaxis()->SetRangeUser(0, 1.2);
-    TH1D *kaonPhi_ID = new TH1D("kaonPhi_ID", "Reconstruction x PID efficiency  |  Phi  |  18x275 GeV", 80,  0, 25);
+    TH1D *kaonPhi_ID = new TH1D("kaonPhi_ID", "Reconstruction x PID efficiency  |  Phi  |  18x275 GeV", 80,  3, 25);
     kaonPhi_ID->Divide(kaon63,kaon61);
     kaonPhi_ID->SetLineColor(kBlue);
     kaonPhi_ID->SetStats(kFALSE);
