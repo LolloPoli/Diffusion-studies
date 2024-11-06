@@ -2,7 +2,8 @@
 
 Particle diffusion studies at ePIC.
 
-PROGRAM NAME:
+PROGRAMS:
+
 - 1prova.C -> Diffusion calculations as a function of different kinematic variables (important for the TMDs).
 - run_all.C -> It is Necessary to run all the files at once, since the main file uses a chain to connect all the data.
 - combined.cpp -> Compine all the canvas and plots produced in one file.
