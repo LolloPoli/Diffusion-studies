@@ -202,38 +202,38 @@ TString infile3="pythia8NCDIS_18x275_minQ2=1_beamEffects_xAngle=-0.025_hiDiv_4.1
     std::vector<double> log_bins_xbj2 = CreateLogBinning(nben, xmin_xbj, xmax_xbj);
     TH2D *pion_MomVsEta = new TH2D("pion_MomVsEta", "Mom vs Eta | pion | y<0.95; Eta; Mom [GeV]", nben, 1.5, 3.5, nben, log_bins_Mom.data());
     TH2D *pion_MomVsPhi = new TH2D("pion_MomVsPhi", "Mom vs Phi (Polar) | pion | y<0.95; Phi [Deg]; Mom [GeV]", nben, 3, 25, nben, log_bins_Mom.data());
-    TH2D *pion_MomVsTheta = new TH2D("pion_MomVsTheta", "Mom vs Theta (Azimuth) | pion | y<0.95; Theta [Deg]; Mom [GeV]", nben, -90, 90, nben, log_bins_Mom.data());
+    TH2D *pion_MomVsTheta = new TH2D("pion_MomVsTheta", "Mom vs Theta (Azimuth) | pion | y<0.95; Theta [Deg]; Mom [GeV]", nben, -180, 180, nben, log_bins_Mom.data());
     TH2D *pion_MomVsEta_rec = new TH2D("pion_MomVsEta_rec", "Mom vs Eta (MC Reco) | pion | y<0.95; Eta; Mom [GeV]", nben, 1.5, 3.5, nben, log_bins_Mom.data());
     TH2D *pion_MomVsPhi_rec = new TH2D("pion_MomVsPhi_rec", "Mom vs Phi (Polar) (MC Reco) | pion | y<0.95; Phi [Deg]; Mom [GeV]", nben, 3, 25, nben, log_bins_Mom.data());
-    TH2D *pion_MomVsTheta_rec = new TH2D("pion_MomVsTheta_rec", "Mom vs Theta (Azimuth) (MC Reco) | pion | y<0.95; Theta [Deg]; Mom [GeV]", nben, -90, 90, nben, log_bins_Mom.data());
+    TH2D *pion_MomVsTheta_rec = new TH2D("pion_MomVsTheta_rec", "Mom vs Theta (Azimuth) (MC Reco) | pion | y<0.95; Theta [Deg]; Mom [GeV]", nben, -180, 180, nben, log_bins_Mom.data());
     TH2D *pion_PhTvsMom = new TH2D("pion_PhTvsMom", "PhT Vs Mom | pion | y<0.95; PhT [GeV]; Mom [GeV]",nben, log_bins_PhT2.data(), nben, log_bins_Mom.data());
     TH2D *pion_PhTvsZ = new TH2D("pion_PhTvsZ", "Z vs PhT | pion | y<0.95; z; PhT [GeV]", nben, log_bins_z2.data(), nben, log_bins_PhT2.data());
     TH2D *pion_PhTVsEta = new TH2D("pion_PhTVsEta", "PhRT vs Eta | pion | y<0.95; Eta; PhT [GeV]", nben, 1.5, 3.5, nben, log_bins_PhT2.data());
     TH2D *pion_PhTvsPhi = new TH2D("pion_PhTvsPhi", "Phi (Polar) vs PhT | pion | y<0.95; Phi [Deg]; PhT [GeV]", nben, 3, 25, nben, log_bins_PhT2.data());
-    TH2D *pion_PhTvsTheta = new TH2D("pion_PhTvsTheta", "Theta (Azimuth) vs PhT | pion | y<0.95; Theta [Deg]; PhT [GeV]", nben, -90, 90, nben, log_bins_PhT2.data());
+    TH2D *pion_PhTvsTheta = new TH2D("pion_PhTvsTheta", "Theta (Azimuth) vs PhT | pion | y<0.95; Theta [Deg]; PhT [GeV]", nben, -180, 180, nben, log_bins_PhT2.data());
     TH2D *pion_PhTvsMom_rec = new TH2D("pion_PhTvsMom_rec", "PhT Vs Mom (MC Reco) | pion | y<0.95; PhT [GeV]; Mom [GeV]",nben, log_bins_PhT2.data(), nben, log_bins_Mom.data());
     TH2D *pion_PhTvsZ_rec = new TH2D("pion_PhTvsZ_rec", "Z vs PhT (MC Reco) | pion | y<0.95; z; PhT [GeV]", nben, log_bins_z2.data(), nben, log_bins_PhT2.data());
     TH2D *pion_PhTVsEta_rec = new TH2D("pion_PhTVsEta_rec", "PhT vs Eta (MC Reco) | pion | y<0.95; Eta; PhT [GeV]", nben, 1.5, 3.5, nben, log_bins_PhT2.data());
     TH2D *pion_PhTvsPhi_rec = new TH2D("pion_PhTvsPhi_rec", "Phi (Polar) vs PhT (MC Reco) | pion | y<0.95; Phi [Deg]; PhT [GeV]", nben, 3, 25, nben, log_bins_PhT2.data());
-    TH2D *pion_PhTvsTheta_rec = new TH2D("pion_PhTvsTheta_rec", "Theta (Azimuth) vs PhT (MC Reco) | pion | y<0.95; Theta [Deg]; PhT [GeV]", nben, -90, 90, nben, log_bins_PhT2.data());
-    TH2D *pion_ThetaVsPhi = new TH2D("pion_ThetaVsPhi", "Theta (Azimuth) vs Phi (Polar) | pion | y<0.95; Theta [Deg]; Phi [Deg]", nben, -90, 90, nben, 3, 25);
-    TH2D *pion_ThetaVsPhi_rec = new TH2D("pion_ThetaVsPhi_rec", "Theta (Azimuth) vs Phi (Polar) (MC Reco) | pion | y<0.95; Theta [Deg]; Phi [deg]", nben, -90, 90, nben, 3, 25);
+    TH2D *pion_PhTvsTheta_rec = new TH2D("pion_PhTvsTheta_rec", "Theta (Azimuth) vs PhT (MC Reco) | pion | y<0.95; Theta [Deg]; PhT [GeV]", nben, -180, 180, nben, log_bins_PhT2.data());
+    TH2D *pion_ThetaVsPhi = new TH2D("pion_ThetaVsPhi", "Theta (Azimuth) vs Phi (Polar) | pion | y<0.95; Theta [Deg]; Phi [Deg]", nben, -180, 180, nben, 3, 25);
+    TH2D *pion_ThetaVsPhi_rec = new TH2D("pion_ThetaVsPhi_rec", "Theta (Azimuth) vs Phi (Polar) (MC Reco) | pion | y<0.95; Theta [Deg]; Phi [deg]", nben, -180, 180, nben, 3, 25);
     TH2D *pion_ZvsMom = new TH2D("pion_ZvsMom", "Z vs Mom | pion | y<0.95; z; Mom [GeV]", nben, log_bins_z2.data(), nben, log_bins_Mom.data());
     TH2D *pion_ZvsPhi = new TH2D("pion_ZvsPhi", "Z vs Phi (Polar) | pion | y<0.95; Phi [Deg]; z", nben, 3, 25, nben, log_bins_z2.data());
-    TH2D *pion_ZvsTheta = new TH2D("pion_ZvsThta", "Z vs Theta (Azimuth) | pion | y<0.95; Theta [Deg]; z", nben, -90, 90, nben, log_bins_z2.data());
+    TH2D *pion_ZvsTheta = new TH2D("pion_ZvsThta", "Z vs Theta (Azimuth) | pion | y<0.95; Theta [Deg]; z", nben, -180, 180, nben, log_bins_z2.data());
     TH2D *pion_ZvsMom_rec = new TH2D("pion_ZvsMom_rec", "Z vs Mom (MC Reco) | pion | y<0.95; z; Mom [GeV]", nben, log_bins_z2.data(), nben, log_bins_Mom.data());
     TH2D *pion_ZvsPhi_rec = new TH2D("pion_ZvsPhi_rec", "Z vs Phi (Polar) (MC Reco) | pion | y<0.95; Phi [Deg]; z", nben, 3, 25, nben, log_bins_z2.data());
-    TH2D *pion_ZvsTheta_rec = new TH2D("pion_ZvsThta_rec", "Z vs Theta (Azimuth) (MC Reco) | pion | y<0.95; Theta [Deg]; z", nben, -90, 90, nben, log_bins_z2.data());
+    TH2D *pion_ZvsTheta_rec = new TH2D("pion_ZvsThta_rec", "Z vs Theta (Azimuth) (MC Reco) | pion | y<0.95; Theta [Deg]; z", nben, -180, 180, nben, log_bins_z2.data());
     TH2D *pion_XbVsMom = new TH2D("pion_XbVsMom", "Xb vs Mom | pion | y<0.95; xB; Mom [GeV]", nben, log_bins_xbj2.data(), nben, log_bins_Mom.data());
     TH2D *pion_XbVsPhT = new TH2D("pion_XbVsPhT", "Xb vs PhT | pion | y<0.95; xB; PhT [GeV]", nben, log_bins_xbj2.data(), nben, log_bins_PhT2.data());
     TH2D *pion_XbVsZ = new TH2D("pion_XbVsZ", "Xb vs Z | pion | y<0.95; xB; z", nben, log_bins_xbj2.data(), nben, log_bins_z2.data());
     TH2D *pion_XbVsPhi = new TH2D("pion_XbVsPhi", "Xb vs Phi (Polar) | pion | y<0.95; Phi [Deg]; xB", nben, 3, 25, nben, log_bins_xbj2.data());
-    TH2D *pion_XbVsTheta = new TH2D("pion_XbvsTheta", "Xb vs Theta (Azimuth) | pion | y<0.95; Theta [Deg]; xB", nben, -90, 90, nben, log_bins_xbj2.data());
+    TH2D *pion_XbVsTheta = new TH2D("pion_XbvsTheta", "Xb vs Theta (Azimuth) | pion | y<0.95; Theta [Deg]; xB", nben, -180, 180, nben, log_bins_xbj2.data());
     TH2D *pion_XbVsMom_rec = new TH2D("pion_XbVsMom_rec", "Xb vs Mom (MC Reco) | pion | y<0.95; xB; Mom [GeV]", nben, log_bins_xbj2.data(), nben, log_bins_Mom.data());
     TH2D *pion_XbVsPhT_rec = new TH2D("pion_XbVsPhT_rec", "Xb vs PhT (MC Reco) | pion | y<0.95; xB; PhT [GeV]", nben, log_bins_xbj2.data(), nben, log_bins_PhT2.data());
     TH2D *pion_XbVsZ_rec = new TH2D("pion_XbVsZ_rec", "Xb vs Z (MC Reco) | pion | y<0.95; xB; z", nben, log_bins_xbj2.data(), nben, log_bins_z2.data());
     TH2D *pion_XbVsPhi_rec = new TH2D("pion_XbVsPhi_rec", "Xb vs Phi (Polar) (MC Reco) | pion | y<0.95; Phi [Deg]; xB", nben, 3, 25, nben, log_bins_xbj2.data());
-    TH2D *pion_XbVsTheta_rec = new TH2D("pion_XbVsTheta_rec", "Xb vs Theta (Azimuth) (MC Reco) | pion | y<0.95; Theta [Deg]; xB", nben, -90, 90, nben, log_bins_xbj2.data());
+    TH2D *pion_XbVsTheta_rec = new TH2D("pion_XbVsTheta_rec", "Xb vs Theta (Azimuth) (MC Reco) | pion | y<0.95; Theta [Deg]; xB", nben, -180, 180, nben, log_bins_xbj2.data());
 
     TH2D *kaon_MomVsEta = new TH2D("kaon_MomVsEta", "Mom vs Eta | kaon | y<0.95; Eta; Mom [GeV]", nben, 1.5, 3.5, nben, log_bins_Mom.data());
     TH2D *kaon_MomVsPhi = new TH2D("kaon_MomVsPhi", "Mom vs Phi (Polar) | kaon | y<0.95; Phi [Deg]; Mom [GeV]", nben, 3, 25, nben, log_bins_Mom.data());
@@ -245,6 +245,25 @@ TString infile3="pythia8NCDIS_18x275_minQ2=1_beamEffects_xAngle=-0.025_hiDiv_4.1
     TH2D *proton_MomVsEta_rec = new TH2D("proton_MomVsEta_rec", "Mom vs Eta | proton | y<0.95; Eta; Mom [GeV]", nben, 1.5, 3.5, nben, log_bins_Mom.data());
     TH2D *proton_MomVsPhi_rec = new TH2D("proton_MomVsPhi_rec", "Mom vs Phi (Polar) | proton | y<0.95; Phi [Deg]; Mom [GeV]", nben, 3, 25, nben, log_bins_Mom.data());
     
+    // CERCA DEI PROTONI LANCIATI
+    double xmin_m = 1e-1;
+    double xmax_m = 300;
+    double xmax_m2 = 20;
+    std::vector<double> log_bins_momA = CreateLogBinning(nbins, xmin_m, xmax_m);
+    std::vector<double> log_bins_momB = CreateLogBinning(nbins, xmin_m, xmax_m2);
+    TH1D *beamproton_mom = new TH1D("BeamProton_Mom", "Proton beam; GeV",  80, log_bins_momA.data());
+    TH1D *beamproton_theta = new TH1D("BeamProton_Theta", "Proton beam angle", 80, 0, 360);
+    TH1D *beamproton_Phi = new TH1D("BeamProton_Phi", "Proton beam angle", 80, 0, 360);
+    TH1D *beamelectron_mom = new TH1D("BeamElectron_Mom", "Electron beam; GeV",  80, log_bins_momB.data());
+    TH1D *beamelectron_theta = new TH1D("BeamElectron_Theta", "Electron beam angle", 80, 0 , 360);
+    TH1D *beamelectron_Phi = new TH1D("BeamElectron_Phi", "Electron beam angle", 80, 0 , 360);
+    TGraph2D *graphProton = new TGraph2D();      // Grafico per i protoni
+    TGraph2D *graphElectron = new TGraph2D();    // Grafico per gli elettroni
+    int protonIndex = 0, electronIndex = 0; 
+    TH2D *h2 = new TH2D("h2", "Proiezione sferica; Theta (deg); Phi (deg); Intensità", 
+                        20, 0, 180, 20, -180, 180);
+    TH2D *h3 = new TH2D("h3", "Proiezione sferica; Theta (deg); Phi (deg); Intensità", 
+                        20, 0, 180, 20, -180, 180);
     //PROVA DI TH3D
     int nban = 10;
     std::vector<double> log_bins_Mom3 = CreateLogBinning(nban, xmin_mom, xmax_mom);
@@ -253,7 +272,7 @@ TString infile3="pythia8NCDIS_18x275_minQ2=1_beamEffects_xAngle=-0.025_hiDiv_4.1
     std::vector<double> log_bins_xbj3 = CreateLogBinning(nban, xmin_xbj, xmax_xbj);
     TH3D *pion_MomVsPhiVsTheta = new TH3D("pion_MomVsPhiVsTheta", 
     "Mom vs Phi (Polar) vs Theta (Azimuth) | pion | y<0.95; Theta [Deg]; Mom [GeV]; Phi [Deg]", 
-    nban, -90, 90, nban, 0, 1, nban, 3, 25);
+    nban, -180, 180, nban, 0, 1, nban, 3, 25);
     pion_MomVsPhiVsTheta->GetYaxis()->Set(nban, log_bins_Mom3.data());
     TH3D *pion_PhTvsZvsXb = new TH3D("pion_PhTvsZvsXb",
     "PhT vs Z vs xB | pion | y<0.95; xB; z; PhT [GeV]",
@@ -352,7 +371,43 @@ TString infile3="pythia8NCDIS_18x275_minQ2=1_beamEffects_xAngle=-0.025_hiDiv_4.1
           */
           // status = 21 incoming particles of the hardest subprocess 
 
-          if(partGenStat[i]<= 1)
+          if(partGenStat[i] == 4){
+            if(pdg == 2212){
+                TVector3 BeamProton(partMomX[i],partMomY[i],partMomZ[i]);
+                float Pmom = BeamProton.Mag();
+                float Peng = sqrt(Pmom*Pmom + 0.939*0.939);
+                double Beam_pThetaRad = BeamProton.Phi();
+                double Beam_pThetaDeg = Beam_pThetaRad * (180.0/TMath::Pi());
+                double Beam_pPhiRad = BeamProton.Theta();
+                double Beam_pPhiDeg = Beam_pPhiRad * (180.0/TMath::Pi());
+                double Px = std::abs(1) * TMath::Sin(Beam_pPhiRad) * TMath::Cos(Beam_pThetaRad);
+                double Py = std::abs(1) * TMath::Sin(Beam_pPhiRad) * TMath::Sin(Beam_pThetaRad);
+                double Pz = std::abs(1) * TMath::Cos(Beam_pPhiRad);
+
+                graphProton->SetPoint(protonIndex++, Px, Py, Pz);
+                beamproton_mom->Fill(Peng);
+                beamproton_theta->Fill(Beam_pThetaDeg);
+                beamproton_Phi->Fill(Beam_pPhiDeg);
+                h2->Fill(Beam_pPhiDeg, Beam_pThetaDeg, 1);
+              }
+              if(pdg == 11){
+                TVector3 BeamElectron(partMomX[i],partMomY[i],partMomZ[i]);
+                float Emom = BeamElectron.Mag();
+                double Beam_EThetaRad = BeamElectron.Phi();
+                double Beam_EThetaDeg = Beam_EThetaRad * (180.0/TMath::Pi());
+                double Beam_EPhiRad = BeamElectron.Theta();
+                double Beam_EPhiDeg = Beam_EPhiRad * (180.0/TMath::Pi());
+                double Ex = std::abs(1) * TMath::Sin(Beam_EPhiRad) * TMath::Cos(Beam_EThetaRad);
+                double Ey = std::abs(1) * TMath::Sin(Beam_EPhiRad) * TMath::Sin(Beam_EThetaRad);
+                double Ez = std::abs(1) * TMath::Cos(Beam_EPhiRad);
+
+                graphElectron->SetPoint(electronIndex++, Ex, Ey, Ez);
+                beamelectron_mom->Fill(Emom);
+                beamelectron_theta->Fill(Beam_EThetaDeg);
+                h3->Fill(Beam_EPhiDeg, Beam_EThetaDeg, 1);
+              }
+          }
+          if(partGenStat[i] <= 1)
             {
               if(pdg == 11)
                 {
@@ -410,9 +465,9 @@ TString infile3="pythia8NCDIS_18x275_minQ2=1_beamEffects_xAngle=-0.025_hiDiv_4.1
 
                   if(pionEta > 1.5 && pionEta <= 3.5){
                     double pionPhiRad = truePionMom.Theta(); // MOLTO CONFUSO LO SO, PHI (MIO) ANGOLO POLARE
-                    double pionThetaRad = 0.5*truePionMom.Phi() + 0.5*TMath::Pi(); // THETA ANGOLO AZIMUTALE 
-                    if(pionThetaRad >= 0.5*TMath::Pi()){
-                      pionThetaRad -= TMath::Pi();
+                    double pionThetaRad = truePionMom.Phi() + TMath::Pi(); // THETA ANGOLO AZIMUTALE 
+                    if(pionThetaRad >= TMath::Pi()){
+                      pionThetaRad -= 2*TMath::Pi();
                     }
                     float pionPhi = pionPhiRad * (180.0 / TMath::Pi());
                     float pionTheta = pionThetaRad * (180.0 / TMath::Pi());
@@ -443,7 +498,10 @@ TString infile3="pythia8NCDIS_18x275_minQ2=1_beamEffects_xAngle=-0.025_hiDiv_4.1
 
                             if(recpionEta <= 3.5 && recpionEta > 1.5){
                               double recpPhi = recPionMom.Theta();
-                              double recpTheta = 0.5*recPionMom.Phi();
+                              double recpTheta = recPionMom.Phi() + TMath::Pi();
+                              if(recpTheta >= TMath::Pi()){
+                                recpTheta -= 2*TMath::Pi();
+                              }
                               float recpionTheta = recpTheta * (180.0 / TMath::Pi());
                               float recpionPhi = recpPhi * (180.0 / TMath::Pi());
                               TLorentzVector scatElpion_Rec(currentMom, currentQ2pion.X(), currentQ2pion.Y(), currentQ2pion.Z());
@@ -1518,6 +1576,67 @@ TString infile3="pythia8NCDIS_18x275_minQ2=1_beamEffects_xAngle=-0.025_hiDiv_4.1
 
     S_Mom->Update();
     S_Mom->Write();
+
+    // PER IL GRAFICO IN 3D
+    //gStyle->SetPalette(kRainBow);  // Usa la palette dei colori "RainBow"
+    gStyle->SetOptStat(0);         // Disattiva le informazioni statistiche
+    // Creazione di una nuova canvas
+    TCanvas *c1 = new TCanvas("pion_XvsZvsPhT", "3D Histogram", 800, 600);
+    c1->SetLogx();  
+    c1->SetLogy();  
+    c1->SetLogz();  
+    // Disegna l'istogramma 3D con i colori sui bin
+    pion_PhTvsZvsXb->Draw("BOX2Z");
+    // Aggiorna il canvas per visualizzare tutto correttamente
+    c1->Update();
+    c1->Write();
+    TCanvas *c2 = new TCanvas("pion_ThetavsMomvsPhi", "3D Histogram", 800, 600);
+    //c1->SetLogx();  
+    c2->SetLogy();  
+    //c1->SetLogz();  
+    // Disegna l'istogramma 3D con i colori sui bin
+    pion_MomVsPhiVsTheta->Draw("BOX2Z");
+    // Aggiorna il canvas per visualizzare tutto correttamente
+    c2->Update();
+    c2->Write();
+
+
+    TCanvas *c3 = new TCanvas("beam axis", "Grafico in coordinate cartesiane", 800, 600);
+    graphProton->SetMarkerColor(kBlue);
+    graphElectron->SetMarkerColor(kRed);
+    graphProton->SetTitle("Protoni - Coordinate cartesiane; X; Y; Z");
+    graphElectron->SetTitle("Elettroni - Coordinate cartesiane; X; Y; Z");
+
+    c3->Divide(2, 1);
+    c3->cd(1);
+    graphProton->Draw("P0 COLZ");  // Grafico per i protoni
+
+    c3->cd(2);
+    graphElectron->Draw("P0 COLZ");  // Grafico per gli elettroni
+    c3->Update();
+    c3->Write();
+
+    TCanvas *c4 = new TCanvas("c2", "Proiezione 2D", 800, 600);
+    h2->Draw("COLZ"); 
+    h3->Draw("COLZ SAME");
+    c4->Update();
+    c4->Write();
+
+    TCanvas *c5 = new TCanvas("c3", "gattopardo", 800, 600);
+    c5->SetTheta(30); // Imposta l'angolo di visualizzazione
+    c5->SetPhi(30);
+    graphProton->SetMarkerColor(kBlue);
+    graphProton->SetMarkerStyle(20);
+    graphProton->Draw("P0");
+    graphElectron->SetMarkerColor(kRed);
+    graphElectron->SetMarkerStyle(24);
+    //graphElectron->Draw("P0 SAME");
+    TExec *ex = new TExec("ex", "graphElectron->Draw(\"P0 SAME\");");
+    ex->Draw();
+    c5->Update();
+    c5->Write();
+
+
 
 
     std::cout << "particelle generate: " << count << std::endl;
