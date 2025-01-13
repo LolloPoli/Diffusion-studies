@@ -98,9 +98,12 @@ int checkRecoID(int recpdg){
     }    
 }
 
-double A_siv = 0.02776;
-double A_coll = 0.03262;
-double PolarizFunction(double Phi_coll, double Phi_siv){
+double PolarizFunction_pip(double Phi_coll, double Phi_siv, double A_coll, double A_siv){
+  double funct = 0.5*(1 + A_coll*TMath::Sin(Phi_coll) + A_siv*TMath::Sin(Phi_siv));
+  return funct;
+}
+
+double PolarizFunction_pim(double Phi_coll, double Phi_siv, double A_coll, double A_siv){
   double funct = 0.5*(1 + A_coll*TMath::Sin(Phi_coll) + A_siv*TMath::Sin(Phi_siv));
   return funct;
 }
@@ -111,6 +114,23 @@ double RandomProb() {
     static std::uniform_real_distribution<> dis(0.0, 1.0); // Distribuzione uniforme
 
     return dis(gen); // Genera un numero casuale
+}
+
+double Parametrization_Aut_Sivers_pip(double x, double Q2, double z, double Pt){
+  double par_Aut_siv_pip = 0.045228 + 0.347852*x - 0.010543*Q2 + 0.070264*z + 0.0100019*Pt + 0.089687*x*x + 0.007352*z*z - 0.126305*Pt*Pt + 0.241113*x*z + 0.424116*x*Pt + 0.296046*z*Pt;
+  return par_Aut_siv_pip;
+}
+double Parametrization_Aut_Sivers_pim(double x, double Q2, double z, double Pt){
+  double par_Aut_siv_pim = 0.001157 - 0.046851*x + 0.001512*Q2 - 0.052702*z - 0.008179*Pt - 0.135427*x*x - 0.016898*z*z + 0.070553*Pt*Pt + 0.411029*x*z - 0.123630*x*Pt + 0.013550*z*Pt;
+  return par_Aut_siv_pim;
+}
+double Parametrization_Aut_Collins_pim(double x, double Q2, double z, double Pt){
+  double par_Aut_col_pim = - 0.032936 - 0.269401*x - 0.001010*Q2 + 0.013900*z - 0.081233*Pt - 0.427778*x*x + 0.125798*z*z + 0.062168*Pt*Pt + 0.180968*x*z - 1.221060*x*Pt - 0.258731*z*Pt;
+  return par_Aut_col_pim;
+}
+double Parametrization_Aut_Collins_pip(double x, double Q2, double z, double Pt){
+  double par_Aut_col_pip = 0.022848 + 0.388968*x - 0.003056*Q2 - 0.018206*z + 0.046010*Pt - 1.374359*x*x + 0.164153*z*z - 0.037786*Pt*Pt + 0.881125*x*z - 0.314619*x*Pt - 0.030364*z*Pt;
+  return par_Aut_col_pip;
 }
 
 void pino(const char* inputFile1, const char* inputFile2, const char* inputFile3, const char* outputFile){
@@ -187,15 +207,23 @@ TString infile3="pythia8NCDIS_18x275_minQ2=1_beamEffects_xAngle=-0.025_hiDiv_4.1
     TTreeReaderArray<double> ToFx(tree_reader, "TOFEndcapHits.position.x");
     TTreeReaderArray<double> ToFy(tree_reader, "TOFEndcapHits.position.y");
     TTreeReaderArray<double> ToFz(tree_reader, "TOFEndcapHits.position.z");
+    TTreeReaderArray<float> ToF_MomX(tree_reader, "TOFEndcapHits.momentum.x");
+    TTreeReaderArray<float> ToF_MomY(tree_reader, "TOFEndcapHits.momentum.y");
+    TTreeReaderArray<float> ToF_MomZ(tree_reader, "TOFEndcapHits.momentum.z");
     TTreeReaderArray<double> TrackerX(tree_reader, "TrackerEndcapHits.position.x");
     TTreeReaderArray<double> TrackerY(tree_reader, "TrackerEndcapHits.position.y");
     TTreeReaderArray<double> TrackerZ(tree_reader, "TrackerEndcapHits.position.z");
+    TTreeReaderArray<float> Tracker_MomX(tree_reader, "TrackerEndcapHits.momentum.x");
+    TTreeReaderArray<float> Tracker_MomY(tree_reader, "TrackerEndcapHits.momentum.y");
+    TTreeReaderArray<float> Tracker_MomZ(tree_reader, "TrackerEndcapHits.momentum.z");
     TTreeReaderArray<float> ForwardMPGD_x(tree_reader, "ForwardMPGDEndcapRecHits.position.x");
     TTreeReaderArray<float> ForwardMPGD_y(tree_reader, "ForwardMPGDEndcapRecHits.position.y");
     TTreeReaderArray<float> ForwardMPGD_z(tree_reader, "ForwardMPGDEndcapRecHits.position.z");
     TTreeReaderArray<float> SiEndcapT_x(tree_reader, "SiEndcapTrackerRecHits.position.x");
     TTreeReaderArray<float> SiEndcapT_y(tree_reader, "SiEndcapTrackerRecHits.position.y");
     TTreeReaderArray<float> SiEndcapT_z(tree_reader, "SiEndcapTrackerRecHits.position.z");
+    TTreeReaderArray<float> kinematics_DA_x(tree_reader, "InclusiveKinematicsDA.x");
+    TTreeReaderArray<float> kinematics_DA_Q2(tree_reader, "InclusiveKinematicsDA.Q2");
 
     // Get Reconstructed Track Information
     TTreeReaderArray<float> trackMomX(tree_reader, "ReconstructedChargedParticles.momentum.x");
@@ -217,6 +245,7 @@ TString infile3="pythia8NCDIS_18x275_minQ2=1_beamEffects_xAngle=-0.025_hiDiv_4.1
     int nben = 80;
     int nbun = 40;
     double xmin_xbj = 1e-2;
+    double xmin_xbj3 = 6e-5;
     double xmax_xbj = 1;
     double xmin_Q2 = 1;
     double xmax_Q2 = 100.;
@@ -229,6 +258,7 @@ TString infile3="pythia8NCDIS_18x275_minQ2=1_beamEffects_xAngle=-0.025_hiDiv_4.1
     std::vector<double> log_bins_Q = CreateLogBinning(nbon, qm, qM);
     
     double xmin_q2 = 1;
+    double xmin_q22 = 0.5;
     double xmax_q2 = 100;
     double xmin_mom = 1e-1;
     double xmax_mom = 50;
@@ -238,15 +268,20 @@ TString infile3="pythia8NCDIS_18x275_minQ2=1_beamEffects_xAngle=-0.025_hiDiv_4.1
     double xmax_z = 1;
     std::vector<double> log_bins_Mom = CreateLogBinning(nben, xmin_mom, xmax_mom);
     std::vector<double> log_bins_Q22 = CreateLogBinning(nben, xmin_q2, xmax_q2);
+    std::vector<double> log_bins_Q222 = CreateLogBinning(nben, xmin_q22, xmax_q2);
     std::vector<double> log_bins_PhT2 = CreateLogBinning(nben, xmin_PhT, xmax_PhT);
     std::vector<double> log_bins_z2 = CreateLogBinning(nben, xmin_z, xmax_z);
     std::vector<double> log_bins_xbj2 = CreateLogBinning(nben, xmin_xbj, xmax_xbj);
-    //TH1D *pion_PhT = new TH1D("Particle_PhT", "Production of Pions in function of P_hT; GeV", nbins,0, 5);
+    std::vector<double> log_bins_xbj3 = CreateLogBinning(nben, xmin_xbj3, xmax_xbj);//TH1D *pion_PhT = new TH1D("Particle_PhT", "Production of Pions in function of P_hT; GeV", nbins,0, 5);
     //TH1D *pion_PT = new TH1D("Particle_PT", "Production of Pions+ in function of P_T (from HP); GeV", nbins, 0, 5);
-    TH1D *pion_Q2_dist = new TH1D("pion_Q2_Distribution", "Q^2 distribution | pion| y<0.95 + dRICH acceptance; Q^2 [GeV^2]", nben, log_bins_Q22);
-    TH1D *pion_X_dist = new TH1D("pion_Xbj_Distribution", "X_b distribution | pion| y<0.95 + dRICH acceptance; x_b ", nben, log_bins_xbj2);
-    TH1D *pion_z_dist = new TH1D("pion_z_Distribution", "X_b distribution | pion| y<0.95 + dRICH acceptance; z ", nben, 0, 1);
-    TH1D *pion_PhT_dist = new TH1D("pion_PhT_Distribution", "X_b distribution | pion| y<0.95 + dRICH acceptance; P_hT [GeV] ", nben, 0, 5);
+    TH1D *pionP_Q2_dist = new TH1D("pionP_Q2_Distribution", "Q^2 distribution | pion| y<0.95 + dRICH acceptance; Q^2 [GeV^2]", nben, log_bins_Q22.data());
+    TH1D *pionP_X_dist = new TH1D("pionP_Xbj_Distribution", "X_b distribution | pion| y<0.95 + dRICH acceptance; x_b ", nben, log_bins_xbj2.data());
+    TH1D *pionP_z_dist = new TH1D("pionP_z_Distribution", "z distribution | pion| y<0.95 + dRICH acceptance; z ", nben, 0, 1);
+    TH1D *pionP_PhT_dist = new TH1D("pionP_PhT_Distribution", "P_hT distribution | pion| y<0.95 + dRICH acceptance; P_hT [GeV] ", nben, 0, 5);
+    TH1D *pionM_Q2_dist = new TH1D("pionM_Q2_Distribution", "Q^2 distribution | pion| y<0.95 + dRICH acceptance; Q^2 [GeV^2]", nben, log_bins_Q22.data());
+    TH1D *pionM_X_dist = new TH1D("pionM_Xbj_Distribution", "X_b distribution | pion| y<0.95 + dRICH acceptance; x_b ", nben, log_bins_xbj2.data());
+    TH1D *pionM_z_dist = new TH1D("pionM_z_Distribution", "z distribution | pion| y<0.95 + dRICH acceptance; z ", nben, 0, 1);
+    TH1D *pionM_PhT_dist = new TH1D("pionM_PhT_Distribution", "P_hT distribution | pion| y<0.95 + dRICH acceptance; P_hT [GeV] ", nben, 0, 5);
     TH2D *pion_MomVsQ2 = new TH2D("Particle_MomVsQ2", "Mom vs Q^2 | ch. particles | y<0.95; Mom [GeV]; Q^2 [GeV^2]", nben, 2.5, 30, nben, log_bins_Q22.data());
     TH2D *pion_MomVsEta = new TH2D("Particle_MomVsEta", "Mom vs Eta | ch. particles | y<0.95; Eta; Mom [GeV]", nben, 1.5, 3.5, nben, 2.5, 30);
     TH2D *pion_MomVsPhi = new TH2D("Particle_MomVsTheta", "Mom vs Theta (Polar) | ch. particles | y<0.95; Mom [GeV]; Theta [Deg]", nben, 2.5, 30, nben, 3.5, 25);
@@ -315,13 +350,15 @@ TString infile3="pythia8NCDIS_18x275_minQ2=1_beamEffects_xAngle=-0.025_hiDiv_4.1
 
     TH2F* SiTracker_xy = new TH2F("SiTrackerEndcap_xy", "Silicon tracker endcap XY plane; x [mm]; y [mm]", 200, -250, 250, 200, -250, 250);
     TH2D* Tracker_xy = new TH2D("Tracker_xy", "Tracker XY plane distribution ; x [mm]; y [mm]", 200, -250, 250, 200, -250, 250);
-    TH2D* Tracker_Forward_xy = new TH2D("Tracker_Forward_xy", "Forward Tracker XY plane distribution ; x [mm]; y [mm]", 200, -250, 250, 200, -250, 250);
-    TH2F* MPGD_xy = new TH2F("ForwardMPGD_xy", "Forward MPGD XY plane distribution ; x [mm]; y [mm]", 100, -250, 250, 100, -250, 250);
-    TH2D* ToF_xy = new TH2D("ToF_xy", "ToF XY plane distribution ; x [mm]; y [mm]", 100, -250, 250, 100, -250, 250);
-    TH2F* ToF_Rec_xy = new TH2F("ToF_Rec_xy", "ToF reconstructed XY plane distribution ; x [mm]; y [mm]", 100, -250, 250, 100, -250, 250);
-    TH2F* RealdRICH_xy = new TH2F("RealdRICH_xy", "dRICH XY plane distribution | 1.5<Eta<3.5 , P_h>2.5 GeV ; x [mm]; y [mm]", 100, -250, 250, 100, -250, 250);
-    TH2F* RealdRICH_xy_Gas = new TH2F("RealdRICH_xy_Gas", "dRICH XY plane (Gas) distribution | 1.5<Eta<3.5 , P_h>2.5 GeV ; x [mm]; y [mm]", 200, -250, 250, 200, -250, 250);
-    TH2D* dRICH_xy = new TH2D("dRICH_xy", "dRICH XY plane distribution | 1.5<Eta<3.5 , P_h>2.5 GeV ; x [mm]; y [mm]", 80, -250, 250, 60, -250, 250);
+    TH2D* Tracker_xy_EtaCut = new TH2D("Tracker_xy_EtaCut", "Forward Tracker XY plane distribution | 2.5<Eta<3.5 ; x [mm]; y [mm]", 150, -250, 250, 150, -250, 250);
+    TH2F* MPGD_xy = new TH2F("ForwardMPGD_xy", "Forward MPGD XY plane distribution ; x [mm]; y [mm]", 120, -250, 250, 120, -250, 250);
+    TH2D* ToF_xy = new TH2D("ToF_xy", "ToF XY plane distribution ; x [mm]; y [mm]", 120, -300, 300, 120, -300, 300);
+    TH2F* ToF_Rec_xy = new TH2F("ToF_Rec_xy", "ToF reconstructed XY plane distribution ; x [mm]; y [mm]", 120, -300, 300, 120, -300, 300);
+    TH2D* ToF_xy_EtaCut = new TH2D("ToF_xy_EtaCut", "ToF XY plane distribution | 2.5<Eta<3.5 ; x [mm]; y [mm]", 120, -300, 300, 120, -300, 300);
+    TH2F* RealdRICH_xy = new TH2F("RealdRICH_xy", "dRICH XY plane distribution | 1.5<Eta<3.5 , P_h>2.5 GeV ; x [mm]; y [mm]", 120, -350, 350, 120, -350, 350);
+    TH2F* RealdRICH_xy_Gas = new TH2F("RealdRICH_xy_Gas", "dRICH XY plane (Gas) distribution | 1.5<Eta<3.5 , P_h>2.5 GeV ; x [mm]; y [mm]", 200, -350, 350, 200, -350, 350);
+    TH2F* RealdRICH_xy_EtaCut = new TH2F("RealdRICH_xy_EtaCut", "dRICH XY plane distribution | 2.5<Eta<3.5 , P_h>2.5 GeV ; x [mm]; y [mm]", 150, -350, 350, 150, -350, 350);
+    TH2D* dRICH_xy = new TH2D("dRICH_xy", "dRICH XY plane distribution | 1.5<Eta<3.5 , P_h>2.5 GeV ; x [mm]; y [mm]", 80, -350, 350, 60, -350, 350);
     TH2F* dRICH_TimeVsMom = new TH2F("dRICH_TimeVsMom", "dRICH Time vs Mom distribution | 1.5<Eta<3.5 , P_h>2.5 GeV ; Mom [GeV]; t [ms]", 150, 0, 20, 150, 1875, 2300);
     //TH2F* dRICH_ThetaVsMom = new TH2F("dRICH_ThetaVsMom", "dRICH Theta vs Mom distribution | 1.5<Eta<3.5 , P_h>2.5 GeV ; Mom [GeV]; Theta [rad]", 150, 0, 20, 150, 0.05, 0.4);
 
@@ -337,10 +374,14 @@ TString infile3="pythia8NCDIS_18x275_minQ2=1_beamEffects_xAngle=-0.025_hiDiv_4.1
     TH1D *DeltaPhi_sinArea = new TH1D("DeltaPhi_Sin_Area", "Sivers | Phi_h - Phi_s (area); Phi_h - Phi_s", 40, -TMath::Pi(), TMath::Pi());
     TH1D *DeltaPhi_xLow  = new TH1D("DeltaPhi_xLow", "Sivers | Phi_h - Phi_s (w: Sin(delta)) | 0.01 < xb < 0.1; Phi_h - Phi_s", 40, -TMath::Pi(), TMath::Pi());
     TH1D *DeltaPhi_xHigh  = new TH1D("DeltaPhi_xHigh", "Sivers | Phi_h - Phi_s (w: Sin(delta)) | xb > 0.1; Phi_h - Phi_s", 40, -TMath::Pi(), TMath::Pi());
-    TH1D *DeltaPhi_Polarized = new TH1D("DeltaPhi_Polarized", "Sivers | Phi_h - Phi_s (w: Sin(delta)); Phi_h - Phi_s", 40, -TMath::Pi(), TMath::Pi());
-    TH1D *DeltaPhi_Polarized_Area = new TH1D("DeltaPhi_Polarized_Area", "Sivers | Phi_h - Phi_s (w: Sin(delta)); Phi_h - Phi_s", 40, -TMath::Pi(), TMath::Pi());
+    TH1D *DeltaPhi_Pol_Sivers = new TH1D("DeltaPhi_Pol_Sivers", "Sivers | Phi_h - Phi_s (w: Sin(delta)); Phi_h - Phi_s", 40, -TMath::Pi(), TMath::Pi());
+    TH1D *DeltaPhi_Pol_SiversArea = new TH1D("DeltaPhi_Pol_SiversArea", "Sivers | Phi_h - Phi_s (w: Sin(delta)); Phi_h - Phi_s", 40, -TMath::Pi(), TMath::Pi());
     TH1D *DeltaPhi_Pol_Collins = new TH1D("DeltaPhi_Pol_Collins", "Collins | Phi_h - Phi_s (w: Sin(delta)); Phi_h - Phi_s", 40, -TMath::Pi(), TMath::Pi());
     TH1D *DeltaPhi_Pol_CollinsArea = new TH1D("DeltaPhi_Pol_CollinsArea", "Collins | Phi_h - Phi_s (w: Sin(delta)); Phi_h - Phi_s", 40, -TMath::Pi(), TMath::Pi());
+    TH1D *DeltaPhi_Pol_Sivers_Still = new TH1D("DeltaPhi_Pol_Sivers_Still", "Sivers | Phi_h - Phi_s (w: Sin(delta)); Phi_h - Phi_s", 40, -TMath::Pi(), TMath::Pi());
+    TH1D *DeltaPhi_Pol_SiversArea_Still = new TH1D("DeltaPhi_Pol_SiversArea_Still", "Sivers | Phi_h - Phi_s (w: Sin(delta)); Phi_h - Phi_s", 40, -TMath::Pi(), TMath::Pi());
+    TH1D *DeltaPhi_Pol_Collins_Still = new TH1D("DeltaPhi_Pol_Collins_Still", "Collins | Phi_h - Phi_s (w: Sin(delta)); Phi_h - Phi_s", 40, -TMath::Pi(), TMath::Pi());
+    TH1D *DeltaPhi_Pol_CollinsArea_Still = new TH1D("DeltaPhi_Pol_CollinsArea_Still", "Collins | Phi_h - Phi_s (w: Sin(delta)); Phi_h - Phi_s", 40, -TMath::Pi(), TMath::Pi());
     TH1D *DeltaPhi_Collins = new TH1D("DeltaPhi_Collins", "Collins | Phi_h + Phi_s (w: Sin(delta)); Phi_h + Phi_s", 40, -TMath::Pi(), TMath::Pi());
     TH1D *DeltaPhi_CollinsArea = new TH1D("DeltaPhi_Collins_Area", "Collins | Phi_h + Phi_s (area); Phi_h + Phi_s", 40, -TMath::Pi(), TMath::Pi());
 
@@ -351,7 +392,19 @@ TString infile3="pythia8NCDIS_18x275_minQ2=1_beamEffects_xAngle=-0.025_hiDiv_4.1
     TH1D *Phi_ss2 = new TH1D("Phi_s2", "Phi_s Abs; Phi_s [Deg]", 60, 0, 180);
     TH1D *z_plot = new TH1D("z_plot", "Z; z", nben, 0.01, 0.5);
 
+    TH2F *Real_XbVsQ2 = new TH2F("Real_XbVsQ2", "Xb vs Q^2 | y<0.95; xB; Q^2 [GeV^2]", nben, log_bins_xbj3.data(), nben, log_bins_Q22.data());
+    TH2D *DA_XbVsQ2 = new TH2D("DA_XbVsQ2", "Xb vs Q^2 | y<0.95; xB; Q^2 [GeV^2]", nben, log_bins_xbj3.data(), nben, log_bins_Q222.data());
+
     // RICOSTRUZIONI ___________________________________________________________________________________________________________________________________________________________________________
+
+    TH1D *Delta_Collins_RecPip = new TH1D("Delta_Collins_RecPip", "Collins effect reconstruction Pi+   |   Phi_h + Phi_s (w: Sin(delta)); Phi_h + Phi_s", 20, -TMath::Pi(), TMath::Pi());
+    TH1D *Delta_Collins_Area_RecPip = new TH1D("Delta_Collins_Area_RecPip", "Collins effect reconstruction Area Pi+   |   Phi_h + Phi_s; Phi_h + Phi_s", 20, -TMath::Pi(), TMath::Pi());
+    TH1D *Delta_Sivers_RecPip = new TH1D("Delta_Sivers_RecPip", "Sivers effect reconstruction Pi+   |   Phi_h - Phi_s (w: Sin(delta)); Phi_h - Phi_s", 20, -TMath::Pi(), TMath::Pi());
+    TH1D *Delta_Sivers_Area_RecPip = new TH1D("Delta_Sivers_Area_RecPip", "Sivers effect reconstruction Area Pi+   |   Phi_h - Phi_s; Phi_h - Phi_s", 20, -TMath::Pi(), TMath::Pi());
+    TH1D *Delta_Collins_RecPim = new TH1D("Delta_Collins_RecPim", "Collins effect reconstruction Pi-   |   Phi_h + Phi_s (w: Sin(delta)); Phi_h + Phi_s", 20, -TMath::Pi(), TMath::Pi());
+    TH1D *Delta_Collins_Area_RecPim = new TH1D("Delta_Collins_Area_RecPim", "Collins effect reconstruction Area Pi-   |   Phi_h + Phi_s; Phi_h + Phi_s", 20, -TMath::Pi(), TMath::Pi());
+    TH1D *Delta_Sivers_RecPim = new TH1D("Delta_Sivers_RecPim", "Sivers effect reconstruction   Pi- |   Phi_h - Phi_s (w: Sin(delta)); Phi_h - Phi_s", 20, -TMath::Pi(), TMath::Pi());
+    TH1D *Delta_Sivers_Area_RecPim = new TH1D("Delta_Sivers_Area_RecPim", "Sivers effect reconstruction Area Pi-   |   Phi_h - Phi_s; Phi_h - Phi_s", 20, -TMath::Pi(), TMath::Pi());
     // ______________________________________________________________________________________________________________________________________________
 
     // CERCA DEI PROTONI LANCIATI
@@ -479,8 +532,9 @@ TString infile3="pythia8NCDIS_18x275_minQ2=1_beamEffects_xAngle=-0.025_hiDiv_4.1
     float dRICH_x, dRICH_y;
     // COUNT PARTICLE SPIN
     double spinUp, spinDown;
+    double spinUp_pim, spinDown_pim;
     float dRICH_xGas, dRICH_yGas;
-    double Phi_s_Down, Phi_s_Up, Delta_Down, Delta_Up, SinPhiDown, SinPhiUp;
+    double Phi_s_Down, Phi_s_Up, Delta_Down_Siv, DeltaUp_Siv, SinPhiDown_Siv, SinPhiUp_Siv;
     double Delta_Down_Coll, Delta_Up_Coll, SinPhiDown_Coll, SinPhiUp_Coll;
     float ToF_Rx, ToF_Ry, ToF_ErrX, ToF_ErrY;
     double ToF_x, ToF_y;
@@ -488,6 +542,25 @@ TString infile3="pythia8NCDIS_18x275_minQ2=1_beamEffects_xAngle=-0.025_hiDiv_4.1
     float mpgd_x, mpgd_y;
     float SiEnd_x, SiEnd_y, SiEnd_z;
     float drich_time, drich_momX, drich_momY, drich_momZ, dRICH_momentum, drich_theta;
+    double AUT_sivers_pip, AUT_sivers_pim, AUT_collins_pim, AUT_collins_pip;
+    double F_polarization_pip, F_polarization_pim, rho;
+    float eta_dRICH, eta_ToF, eta_Tracker;
+    TVector3 Polariz_Spin_pip;
+    TVector3 Polariz_Spin_pim;
+    // vettori per la ricostruzione del pione+ spin system
+    TVector3 P_T_axis_RecPip, axis_HP_Unit_RecPip, x_axis_SP_RecPip, x_axis_SP_Unit_RecPip, y_axis_SP_RecPip, ipsilon_RecPip, CurrentBeamElectronVector_RecPip, 
+    z_axis_SP_RecPip, CurrentGammaVector_RecPip, term1_vec; 
+    // recontrusction of the Sivers and Collins distortions
+    double DeltaPhi_Sivers_RecPip, DeltaPhi_Collins_RecPip, SinCollins_RecPip, SinSivers_RecPip;
+    // vettori per la ricostruzione del pione- spin system
+    TVector3 P_T_axis_RecPim, axis_HP_Unit_RecPim, x_axis_SP_RecPim, x_axis_SP_Unit_RecPim, y_axis_SP_RecPim, ipsilon_RecPim, CurrentBeamElectronVector_RecPim, 
+    z_axis_SP_RecPim, CurrentGammaVector_RecPim, term11_vec; 
+    // recontrusction of the Sivers and Collins distortions
+    double DeltaPhi_Sivers_RecPim, DeltaPhi_Collins_RecPim, SinCollins_RecPim, SinSivers_RecPim;
+    // per bin di Aut su Xb
+    const int nBins = 6;
+    double xB_bins[nBins+1] = {0.01, 0.03, 0.05, 0.07, 0.1, 0.2, 1.0};
+    double xB_centers[nBins]; 
 
     while(tree_reader.Next()) { // Loop over events
       for(unsigned int l=0; l<dRICHx.GetSize(); l++){
@@ -497,8 +570,14 @@ TString infile3="pythia8NCDIS_18x275_minQ2=1_beamEffects_xAngle=-0.025_hiDiv_4.1
         TVector3 dRICH_Mom(dRICH_momX[l],dRICH_momY[l],dRICH_momZ[l]);
         dRICH_momentum = dRICH_Mom.Mag();
         //drich_theta = dRICH_theta[l];
+        eta_dRICH = dRICH_Mom.PseudoRapidity();
         RealdRICH_xy->Fill(dRICH_x, dRICH_y);
         dRICH_TimeVsMom->Fill(dRICH_momentum, drich_time);
+        if(eta_dRICH >= 2.5 && eta_dRICH <= 3.5){
+          if(dRICH_momentum >= 2.5){
+            RealdRICH_xy_EtaCut->Fill(dRICH_x, dRICH_y);
+          }
+        }
         //dRICH_ThetaVsMom->Fill(dRICH_momentum, drich_theta);
       }
       for(unsigned int a=0; a<dRICHxGas.GetSize(); a++){
@@ -518,14 +597,21 @@ TString infile3="pythia8NCDIS_18x275_minQ2=1_beamEffects_xAngle=-0.025_hiDiv_4.1
         ToF_x = ToFx[c];
         ToF_y = ToFy[c];
         ToF_xy->Fill(ToF_x, ToF_y);
+        TVector3 ToF_Mom(ToF_MomX[c], ToF_MomY[c], ToF_MomZ[c]);
+        eta_ToF = ToF_Mom.PseudoRapidity();
+        if(eta_ToF >= 2.5 && eta_ToF <= 3.5){
+          ToF_xy_EtaCut->Fill(ToF_x, ToF_y);
+        }
       }
       for(unsigned int d=0; d<TrackerX.GetSize(); d++){
         Tracker_x = TrackerX[d];
         Tracker_y = TrackerY[d];
         Tracker_z = TrackerZ[d];
         Tracker_xy->Fill(Tracker_x, Tracker_y);
-        if(Tracker_z > 0){
-          Tracker_Forward_xy->Fill(Tracker_x, Tracker_y);
+        TVector3 Trk_Mom(Tracker_MomX[d], Tracker_MomY[d], Tracker_MomZ[d]);
+        eta_Tracker = Trk_Mom.PseudoRapidity();
+        if(eta_Tracker >= 2.5 && eta_Tracker <= 3.5){
+          Tracker_xy_EtaCut->Fill(Tracker_x, Tracker_y);
         }
       }
       for(unsigned int e=0; e<ForwardMPGD_x.GetSize(); e++){
@@ -540,6 +626,12 @@ TString infile3="pythia8NCDIS_18x275_minQ2=1_beamEffects_xAngle=-0.025_hiDiv_4.1
         if (SiEnd_z > 0){
           SiTracker_xy->Fill(SiEnd_x, SiEnd_y);
         }
+      }
+      float x_el, Q2_el;
+      for(unsigned int h=0; h<kinematics_DA_x.GetSize(); h++){
+        x_el = kinematics_DA_x[h];
+        Q2_el = kinematics_DA_Q2[h];
+        Real_XbVsQ2->Fill(x_el, Q2_el);
       }
 
       for(unsigned int i=0; i<partGenStat.GetSize(); i++) // Loop over thrown particles
@@ -559,6 +651,7 @@ TString infile3="pythia8NCDIS_18x275_minQ2=1_beamEffects_xAngle=-0.025_hiDiv_4.1
           }
 
           int pdg = (std::abs(partPdg[i]));
+          int pdg2 = (partPdg[i]);
           // status = 4 is the beam (ref 1767) in HepMC
           /*
           if(pdg == 11){
@@ -636,6 +729,10 @@ TString infile3="pythia8NCDIS_18x275_minQ2=1_beamEffects_xAngle=-0.025_hiDiv_4.1
                       double angle = angleR * (180.0 / TMath::Pi());
                       currentPhi = ElMom.Theta();
                       currentMom = ElMom.Mag();
+                      double y_el = (18.0 - std::abs(currentMom)*TMath::Cos(currentPhi))/(18.0);
+                      double Q2_elect = 4.0*18.0*std::abs(currentMom)*TMath::Sin(0.5*currentPhi)*TMath::Sin(0.5*currentPhi);
+                      double x_elect = (Q2_elect)/(2*0.938*(18.0 -std::abs(currentMom)*TMath::Cos(currentPhi)));
+                      DA_XbVsQ2->Fill(x_elect, Q2_elect);
                       currentQ2pion.SetXYZ(partMomX[i],partMomY[i],partMomZ[i]);
                       currentQ2kaon.SetXYZ(partMomX[i],partMomY[i],partMomZ[i]);
                       currentQ2proton.SetXYZ(partMomX[i],partMomY[i],partMomZ[i]);
@@ -645,6 +742,7 @@ TString infile3="pythia8NCDIS_18x275_minQ2=1_beamEffects_xAngle=-0.025_hiDiv_4.1
                       //BeamElectronVector.push_back(ElMom);
                       BeamElectronVectorSingle.SetXYZ(partMomX[i],partMomY[i],partMomZ[i]);
                       ElectronScattered.SetPxPyPzE(partMomX[i],partMomY[i],partMomZ[i], currentMom);
+
 
                         for(unsigned int j=0; j<simuAssoc.GetSize(); j++)
                         {
@@ -832,66 +930,13 @@ TString infile3="pythia8NCDIS_18x275_minQ2=1_beamEffects_xAngle=-0.025_hiDiv_4.1
                                 Phi_collins-= 2*TMath::Pi();
                               }
                               double SinCollins = TMath::Sin(Phi_collins);
-                              double F_polariz = PolarizFunction(Phi_collins, Phi_sivers);
-                              double rho = RandomProb();
+                              double SinSivers = TMath::Sin(Phi_sivers);
+                              //double F_polariz = PolarizFunction(Phi_collins, Phi_sivers);
+                              //double rho = RandomProb();
                               if(z_DA_pion <=  1){
                                   //xQplane->Fill(xbj_DA_pion, Q2_DA_pion);
                                   //pion_PhT->Fill(PhT_pion);
                                   //pion_PT->Fill(P_T);
-                                  if(rho > F_polariz){
-                                    spinDown += 1;
-                                    TVector3 t1_1 = x_axis_SP.Cross(ProtonSpinDown);
-                                    double t1 = t1_1 * z_axis_SP;
-                                    double t2 = x_axis_SP.Dot(ProtonSpinDown);
-                                    Phi_s_Down = std::atan2(t1, t2);
-                                    Delta_Down = Phi_HP_Rad - Phi_s_Down;
-                                    Delta_Down_Coll = Phi_HP_Rad + Phi_s_Down;
-                                    if(Delta_Down < -TMath::Pi()){
-                                      Delta_Down += 2*TMath::Pi();
-                                    }
-                                    else if(Delta_Down > TMath::Pi()){
-                                      Delta_Down -= 2*TMath::Pi();
-                                    }
-                                    if(Delta_Down_Coll < -TMath::Pi()){
-                                      Delta_Down_Coll += 2*TMath::Pi();
-                                    }
-                                    else if(Delta_Down_Coll > TMath::Pi()){
-                                      Delta_Down_Coll -= 2*TMath::Pi();
-                                    }
-                                    SinPhiDown = TMath::Sin(Delta_Down);
-                                    SinPhiDown_Coll = TMath::Sin(Delta_Down_Coll);
-                                    DeltaPhi_Polarized->Fill(Delta_Down, SinPhiDown);
-                                    DeltaPhi_Polarized_Area->Fill(Delta_Down);
-                                    DeltaPhi_Pol_Collins->Fill(Delta_Down_Coll, SinPhiDown_Coll);
-                                    DeltaPhi_Pol_CollinsArea->Fill(Delta_Down_Coll);
-                                  }
-                                  if(rho <= F_polariz){
-                                    spinUp += 1;
-                                    TVector3 t3_1 = x_axis_SP.Cross(ProtonSpin);
-                                    double t3 = t3_1 * z_axis_SP;
-                                    double t4 = x_axis_SP.Dot(ProtonSpin);
-                                    Phi_s_Up = std::atan2(t3, t4);
-                                    Delta_Up = Phi_HP_Rad - Phi_s_Up;
-                                    Delta_Up_Coll = Phi_HP_Rad + Phi_s_Up;
-                                    if(Delta_Up < -TMath::Pi()){
-                                      Delta_Up += 2*TMath::Pi();
-                                    }
-                                    else if(Delta_Up > TMath::Pi()){
-                                      Delta_Up -= 2*TMath::Pi();
-                                    }
-                                    if(Delta_Up_Coll < -TMath::Pi()){
-                                      Delta_Up_Coll += 2*TMath::Pi();
-                                    }
-                                    else if(Delta_Up_Coll > TMath::Pi()){
-                                      Delta_Up_Coll -= 2*TMath::Pi();
-                                    }
-                                    SinPhiUp = TMath::Sin(Delta_Up);
-                                    SinPhiUp_Coll = TMath::Sin(Delta_Up_Coll);
-                                    DeltaPhi_Polarized->Fill(Delta_Up, SinPhiUp);
-                                    DeltaPhi_Polarized_Area->Fill(Delta_Up);
-                                    DeltaPhi_Pol_Collins->Fill(Delta_Up_Coll, SinPhiUp_Coll);
-                                    DeltaPhi_Pol_CollinsArea->Fill(Delta_Up_Coll);
-                                  }
                                   pion_MomVsQ2->Fill(mom_pion, Q2_DA_pion);
                                   pion_MomVsEta->Fill(pionEta, mom_pion);
                                   pion_PhTvsQ2->Fill(PhT_pion, Q2_DA_pion);
@@ -985,11 +1030,273 @@ TString infile3="pythia8NCDIS_18x275_minQ2=1_beamEffects_xAngle=-0.025_hiDiv_4.1
                                   if(pion_EpZ >= 1980){
                                     dRICH_xy->Fill(x_drich, y_drich);
                                   }
-                                  if(pdg==211){
-                                    pion_Q2_dist->Fill(Q2_DA_pion);
-                                    pion_X_dist->Fill(xbj_DA_pion);
-                                    pion_z_dist->Fill(z_DA_pion);
-                                    pion_PhT_dist->Fill(PhT_pion);
+                                  // positive pion 
+                                  if(pdg2 == 211){
+                                    pionP_Q2_dist->Fill(Q2_DA_pion);
+                                    pionP_X_dist->Fill(xbj_DA_pion);
+                                    pionP_z_dist->Fill(z_DA_pion);
+                                    pionP_PhT_dist->Fill(PhT_pion);
+                                    AUT_collins_pip = Parametrization_Aut_Collins_pip(xbj_DA_pion - 0.08411, Q2_DA_pion - 5.912, z_DA_pion - 0.1504, PhT_pion - 0.9155);
+                                    AUT_sivers_pip = Parametrization_Aut_Sivers_pip(xbj_DA_pion - 0.08411, Q2_DA_pion - 5.912, z_DA_pion - 0.1504, PhT_pion - 0.9155);
+                                    F_polarization_pip = PolarizFunction_pip(Phi_collins, Phi_sivers, AUT_collins_pip, AUT_sivers_pip);
+                                    rho = RandomProb();
+                                    if(rho > F_polarization_pip){
+                                      spinDown += 1;
+                                      Polariz_Spin_pip.SetXYZ(0, -1, 0);
+                                      /*
+                                      TVector3 t1_1 = x_axis_SP.Cross(ProtonSpinDown);
+                                      double t1 = t1_1 * z_axis_SP;
+                                      double t2 = x_axis_SP.Dot(ProtonSpinDown);
+                                      Phi_s_Down = std::atan2(t1, t2);
+                                      Delta_Down_Siv = Phi_HP_Rad - Phi_s_Down;
+                                      Delta_Down_Coll = Phi_HP_Rad + Phi_s_Down;
+                                      if(Delta_Down_Siv< -TMath::Pi()){
+                                        Delta_Down_Siv+= 2*TMath::Pi();
+                                      }
+                                      else if(Delta_Down_Siv> TMath::Pi()){
+                                        Delta_Down_Siv-= 2*TMath::Pi();
+                                      }
+                                      if(Delta_Down_Coll < -TMath::Pi()){
+                                        Delta_Down_Coll += 2*TMath::Pi();
+                                      }
+                                      else if(Delta_Down_Coll > TMath::Pi()){
+                                        Delta_Down_Coll -= 2*TMath::Pi();
+                                      }
+                                      SinPhiDown_Siv = TMath::Sin(Delta_Down_Siv);
+                                      SinPhiDown_Coll = TMath::Sin(Delta_Down_Coll);
+                                      DeltaPhi_Pol_Sivers->Fill(Delta_Down_Siv, SinPhiDown_Siv);
+                                      DeltaPhi_Pol_SiversArea->Fill(Delta_Down_Siv);
+                                      DeltaPhi_Pol_Collins->Fill(Delta_Down_Coll, SinPhiDown_Coll);
+                                      DeltaPhi_Pol_CollinsArea->Fill(Delta_Down_Coll);
+                                      
+                                      DeltaPhi_Pol_Sivers_Still->Fill(Phi_sivers, SinSivers);
+                                      DeltaPhi_Pol_SiversArea_Still->Fill(Phi_sivers);
+                                      DeltaPhi_Pol_Collins_Still->Fill(Phi_collins, SinCollins);
+                                      DeltaPhi_Pol_CollinsArea_Still->Fill(Phi_collins);
+                                      */
+                                    }             
+                                    if(rho <= F_polarization_pip){
+                                      spinUp += 1;
+                                      Polariz_Spin_pip.SetXYZ(0, 1, 0);
+                                      /*
+                                      TVector3 t3_1 = x_axis_SP.Cross(ProtonSpin);
+                                      double t3 = t3_1 * z_axis_SP;
+                                      double t4 = x_axis_SP.Dot(ProtonSpin);
+                                      Phi_s_Up = std::atan2(t3, t4);
+                                      DeltaUp_Siv = Phi_HP_Rad - Phi_s_Up;
+                                      Delta_Up_Coll = Phi_HP_Rad + Phi_s_Up;
+                                      if(DeltaUp_Siv < -TMath::Pi()){
+                                        DeltaUp_Siv += 2*TMath::Pi();
+                                      }
+                                      else if(DeltaUp_Siv > TMath::Pi()){
+                                        DeltaUp_Siv -= 2*TMath::Pi();
+                                      }
+                                      if(Delta_Up_Coll < -TMath::Pi()){
+                                        Delta_Up_Coll += 2*TMath::Pi();
+                                      }
+                                      else if(Delta_Up_Coll > TMath::Pi()){
+                                        Delta_Up_Coll -= 2*TMath::Pi();
+                                      }
+                                      SinPhiUp_Siv = TMath::Sin(DeltaUp_Siv);
+                                      SinPhiUp_Coll = TMath::Sin(Delta_Up_Coll);
+                                      DeltaPhi_Pol_Sivers->Fill(DeltaUp_Siv, SinPhiUp_Siv);
+                                      DeltaPhi_Pol_SiversArea->Fill(DeltaUp_Siv);
+                                      DeltaPhi_Pol_Collins->Fill(Delta_Up_Coll, SinPhiUp_Coll);
+                                      DeltaPhi_Pol_CollinsArea->Fill(Delta_Up_Coll);
+                                      
+                                      DeltaPhi_Pol_Sivers_Still->Fill(Phi_sivers, SinSivers);
+                                      DeltaPhi_Pol_SiversArea_Still->Fill(Phi_sivers);
+                                      DeltaPhi_Pol_Collins_Still->Fill(Phi_collins, SinCollins);
+                                      DeltaPhi_Pol_CollinsArea_Still->Fill(Phi_collins);
+                                      */
+                                    }
+                                    for(unsigned int j=0; j<simuAssoc.GetSize(); j++){
+                                      if(simuAssoc[j] == i){
+                                        TVector3 recPionP_Mom(trackMomX[recoAssoc[j]],trackMomY[recoAssoc[j]],trackMomZ[recoAssoc[j]]); 
+                                        CurrentGammaVector_RecPip = GammaVectorSingle;
+                                        z_axis_SP_RecPip = CurrentGammaVector_RecPip.Unit(); // voglio che l'asse z sia lungo la direzione di gamma
+                                        // componenti asse z dello scattering plane nel sistema del laboratorio 
+                                        double z_axis_z_RecPip = z_axis_SP_RecPip.Z();
+                                        double z_axis_y_RecPip = z_axis_SP_RecPip.Y();
+                                        double z_axis_x_RecPip = z_axis_SP_RecPip.X();
+                                        // per calcolare y mi serve il prodotto vettoriale tra il leptone entrante e gamma
+                                        CurrentBeamElectronVector_RecPip = BeamElectronVectorSingle_Rec;
+                                        ipsilon_RecPip = CurrentGammaVector_RecPip.Cross(CurrentBeamElectronVector_RecPip);
+                                        y_axis_SP_RecPip = ipsilon_RecPip.Unit();
+                                        x_axis_SP_RecPip = y_axis_SP_RecPip.Cross(z_axis_SP_RecPip);
+                                        x_axis_SP_Unit_RecPip = x_axis_SP_RecPip.Unit();
+                                        // BENE ADESSO ABBIAMO I NOSTRI ASSI DEL PIANO DI SCATTERING
+                                        //double P_T = truePionMom.Perp(z_axis_SP); // questo comando mi da il vettore ortogonale a z, quindi il momento trasverso
+                                        double Theta_HP_Rad_RecPip = truePionMom.Angle(z_axis_SP_RecPip); // dovrebbe fornire l'angolo polare del hadron plane
+                                        double Theta_HP_Deg_RecPip = Theta_HP_Rad_RecPip * (180.0/TMath::Pi());
+                                        // però vogliamo anche il vettore del momento trasverso
+                                        double PdotZ_RecPip = recPionP_Mom.Dot(z_axis_SP_RecPip); // momento proiettato sull'asse z
+                                        double PdotY_RecPip = recPionP_Mom.Dot(y_axis_SP_RecPip);
+                                        double PdotX_RecPip = recPionP_Mom.Dot(x_axis_SP_Unit_RecPip);
+                                        TVector3 axis_HP_RecPip(PdotX_RecPip, PdotY_RecPip, PdotZ_RecPip); // in realtà dovrebbe essere il momento nel sistema SP
+                                        axis_HP_Unit_RecPip = axis_HP_RecPip.Unit();
+                                        // versori del Hadron plane
+                                        double z_RecPip = axis_HP_Unit_RecPip.Z();
+                                        double y_RecPip = axis_HP_Unit_RecPip.Y();
+                                        double x_RecPip = axis_HP_Unit_RecPip.X();
+                                        //TVector3 Momentum_Z = PdotZ * z_axis_SP;
+                                        TVector3 Momentum_Z_RecPip(0, 0, PdotZ_RecPip); 
+                                        TVector3 P_T_Vector_RecPip = axis_HP_RecPip - Momentum_Z_RecPip; // ora lo possiamo usare per trovare l'angolo azimutale
+                                        P_T_axis_RecPip = P_T_Vector_RecPip.Unit(); 
+                                        double P_T_Vector_x_RecPip = P_T_Vector_RecPip * x_axis_SP_Unit_RecPip;
+                                        double P_T_Vector_y_RecPip = P_T_Vector_RecPip * y_axis_SP_RecPip; // calcolo il momento trasverso sugli assi x e y
+                                        // uso atan2 per calcolare l'angolo tra P_T e x', il primo termine è legatop al prodotto vettoriale, il secondo a quello scalare
+                                        double Phi_HP_RecPip = std::atan2(P_T_Vector_y_RecPip, P_T_Vector_x_RecPip);
+                                        double Phi_HP_Deg_RecPip = Phi_HP_RecPip * (180.0/TMath::Pi()); 
+                                        // the system will see an up or down spin, since it recall Polarized_Spin_pip, which is filled by the latest value
+                                        // now I have to calculate phi_s
+                                        term1_vec = x_axis_SP_RecPip.Cross(Polariz_Spin_pip);
+                                        double term1 = term1_vec * z_axis_SP_RecPip;
+                                        double term2 = x_axis_SP_RecPip.Dot(Polariz_Spin_pip);
+                                        double Phi_s_RecPip = std::atan2(term1, term2);
+                                        // Sivers and Collins calculation
+                                        DeltaPhi_Collins_RecPip = Phi_HP_RecPip + Phi_s_RecPip;
+                                        DeltaPhi_Sivers_RecPip = Phi_HP_RecPip - Phi_s_RecPip;
+                                        if(DeltaPhi_Collins_RecPip < -TMath::Pi()){
+                                          DeltaPhi_Collins_RecPip += 2*TMath::Pi();
+                                        }
+                                        else if(DeltaPhi_Collins_RecPip > TMath::Pi()){
+                                          DeltaPhi_Collins_RecPip -= 2*TMath::Pi();
+                                        }
+                                        if(DeltaPhi_Sivers_RecPip < -TMath::Pi()){
+                                          DeltaPhi_Sivers_RecPip += 2*TMath::Pi();
+                                        }
+                                        else if(DeltaPhi_Sivers_RecPip > TMath::Pi()){
+                                          DeltaPhi_Sivers_RecPip -= 2*TMath::Pi();
+                                        }
+                                        // Not sure if these are correct, but I perform the cycles to restrict the values inside -pi,pi
+                                        SinCollins_RecPip = TMath::Sin(DeltaPhi_Collins_RecPip);
+                                        SinSivers_RecPip = TMath::Sin(DeltaPhi_Sivers_RecPip);
+                                        // plot
+                                        Delta_Collins_RecPip->Fill(DeltaPhi_Collins_RecPip, SinCollins_RecPip);
+                                        Delta_Collins_Area_RecPip->Fill(DeltaPhi_Collins_RecPip); // to normalize the other plot
+                                        Delta_Sivers_RecPip->Fill(DeltaPhi_Sivers_RecPip, SinSivers_RecPip);
+                                        Delta_Sivers_Area_RecPip->Fill(DeltaPhi_Sivers_RecPip);   // same here
+
+                                        // vogliamo dividere in bin lo spettro di xB così da vedere Aut in funzione di x
+                                        for (int z = 0; z < nBins; z++){
+                                          double x_min = xB_bins[z];
+                                          double x_max = xB_bins[z+1];
+                                          xB_centers[z] = (x_min + x_max) / 2;
+                                          // Crea un nome unico per l'istogramma
+                                          TString histName_Pip = Form("h_phi_RecPip_xmin%.2f_xmax%.2f", x_min, x_max);
+                                          TString histName_PipArea = Form("h_phi_RecPipArea_xmin%.2f_xmax%.2f", x_min, x_max);
+                                          // Verifica se l'istogramma esiste già nel file
+                                          TH1D* h_phi = (TH1D*)gDirectory->Get(histName_Pip);  // Cerca l'istogramma nella memoria
+                                          TH1D* h_phi2 = (TH1D*)gDirectory->Get(histName_PipArea);  // Cerca l'istogramma nella memoria
+                                          if (!h_phi) {
+                                              // Se l'istogramma non esiste, crealo
+                                              h_phi = new TH1D(histName_Pip, Form("Collins analyses of Phi_h + Phi_s (w:Sin(x)) | %.2f < x_B < %.2f; Phi_h + Phi_s", x_min, x_max), 10, -TMath::Pi(), TMath::Pi());
+                                              // Scrivi il nuovo istogramma nel file
+                                              //h_phi->Write();
+                                          }
+                                          if (!h_phi2) {
+                                              // Se l'istogramma non esiste, crealo
+                                              h_phi2 = new TH1D(histName_PipArea, Form("Area of Phi_h + Phi_s (w:Sin(x)) | %.2f < x_B < %.2f; Phi_h + Phi_s", x_min, x_max), 10, -TMath::Pi(), TMath::Pi());
+                                              // Scrivi il nuovo istogramma nel file
+                                              //h_phi->Write();
+                                          }
+                                          // riempo l'istogramma
+                                          if(xbj_DA_pion >= x_min && xbj_DA_pion <= x_max){
+                                            h_phi->Fill(DeltaPhi_Collins_RecPip, SinCollins_RecPip);
+                                            h_phi2->Fill(DeltaPhi_Collins_RecPip);
+                                          }
+                                        }
+                                      }
+                                    }    
+                                  }
+                                  if(pdg2 == -211){
+                                    pionM_Q2_dist->Fill(Q2_DA_pion);
+                                    pionM_X_dist->Fill(xbj_DA_pion);
+                                    pionM_z_dist->Fill(z_DA_pion);
+                                    pionM_PhT_dist->Fill(PhT_pion);
+                                    AUT_collins_pim = Parametrization_Aut_Collins_pim(xbj_DA_pion - 0.08363, Q2_DA_pion - 5.937, z_DA_pion - 0.1425, PhT_pion - 0.063);
+                                    AUT_sivers_pim = Parametrization_Aut_Sivers_pim(xbj_DA_pion - 0.08363, Q2_DA_pion - 5.937, z_DA_pion - 0.1425, PhT_pion - 0.9063);
+                                    F_polarization_pim = PolarizFunction_pim(Phi_collins, Phi_sivers, AUT_collins_pim, AUT_sivers_pim);
+                                    rho = RandomProb();
+                                    if(rho > F_polarization_pim){
+                                      spinDown_pim += 1;
+                                      Polariz_Spin_pim.SetXYZ(0, -1, 0);
+                                    }
+                                    if(rho <= F_polarization_pim){
+                                      spinUp_pim += 1;
+                                      Polariz_Spin_pim.SetXYZ(0, 1, 0);
+                                    }
+                                    for(unsigned int j=0; j<simuAssoc.GetSize(); j++){
+                                      if(simuAssoc[j] == i){
+                                        TVector3 recPionM_Mom(trackMomX[recoAssoc[j]],trackMomY[recoAssoc[j]],trackMomZ[recoAssoc[j]]); 
+                                        // the system will see an up or down spin, since it recall Polarized_Spin_pim, which is filled by the latest value
+                                        CurrentGammaVector_RecPim = GammaVectorSingle;
+                                        z_axis_SP_RecPim = CurrentGammaVector_RecPim.Unit(); // voglio che l'asse z sia lungo la direzione di gamma
+                                        // componenti asse z dello scattering plane nel sistema del laboratorio 
+                                        double z_axis_z_RecPim = z_axis_SP_RecPim.Z();
+                                        double z_axis_y_RecPim = z_axis_SP_RecPim.Y();
+                                        double z_axis_x_RecPim = z_axis_SP_RecPim.X();
+                                        // per calcolare y mi serve il prodotto vettoriale tra il leptone entrante e gamma
+                                        CurrentBeamElectronVector_RecPim = BeamElectronVectorSingle_Rec;
+                                        ipsilon_RecPim = CurrentGammaVector_RecPim.Cross(CurrentBeamElectronVector_RecPim);
+                                        y_axis_SP_RecPim = ipsilon_RecPim.Unit();
+                                        x_axis_SP_RecPim = y_axis_SP_RecPim.Cross(z_axis_SP_RecPim);
+                                        x_axis_SP_Unit_RecPim = x_axis_SP_RecPim.Unit();
+                                        // BENE ADESSO ABBIAMO I NOSTRI ASSI DEL PIANO DI SCATTERING
+                                        //double P_T = truePionMom.Perp(z_axis_SP); // questo comando mi da il vettore ortogonale a z, quindi il momento trasverso
+                                        double Theta_HP_Rad_RecPim = truePionMom.Angle(z_axis_SP_RecPim); // dovrebbe fornire l'angolo polare del hadron plane
+                                        double Theta_HP_Deg_RecPim = Theta_HP_Rad_RecPim * (180.0/TMath::Pi());
+                                        // però vogliamo anche il vettore del momento trasverso
+                                        double PdotZ_RecPim = recPionM_Mom.Dot(z_axis_SP_RecPim); // momento proiettato sull'asse z
+                                        double PdotY_RecPim = recPionM_Mom.Dot(y_axis_SP_RecPim);
+                                        double PdotX_RecPim = recPionM_Mom.Dot(x_axis_SP_Unit_RecPim);
+                                        TVector3 axis_HP_RecPim(PdotX_RecPim, PdotY_RecPim, PdotZ_RecPim); // in realtà dovrebbe essere il momento nel sistema SP
+                                        axis_HP_Unit_RecPim = axis_HP_RecPim.Unit();
+                                        // versori del Hadron plane
+                                        double z_RecPim = axis_HP_Unit_RecPim.Z();
+                                        double y_RecPim = axis_HP_Unit_RecPim.Y();
+                                        double x_RecPim = axis_HP_Unit_RecPim.X();
+                                        //TVector3 Momentum_Z = PdotZ * z_axis_SP;
+                                        TVector3 Momentum_Z_RecPim(0, 0, PdotZ_RecPim); 
+                                        TVector3 P_T_Vector_RecPim = axis_HP_RecPim - Momentum_Z_RecPim; // ora lo possiamo usare per trovare l'angolo azimutale
+                                        P_T_axis_RecPim = P_T_Vector_RecPim.Unit(); 
+                                        double P_T_Vector_x_RecPim = P_T_Vector_RecPim * x_axis_SP_Unit_RecPim;
+                                        double P_T_Vector_y_RecPim = P_T_Vector_RecPim * y_axis_SP_RecPim; // calcolo il momento trasverso sugli assi x e y
+                                        // uso atan2 per calcolare l'angolo tra P_T e x', il primo termine è legatop al prodotto vettoriale, il secondo a quello scalare
+                                        double Phi_HP_RecPim = std::atan2(P_T_Vector_y_RecPim, P_T_Vector_x_RecPim);
+                                        double Phi_HP_Deg_RecPim = Phi_HP_RecPim * (180.0/TMath::Pi()); 
+                                        // the system will see an up or down spin, since it recall Polarized_Spin_pip, which is filled by the latest value
+                                        // now I have to calculate phi_s
+                                        term11_vec = x_axis_SP_RecPim.Cross(Polariz_Spin_pip);
+                                        double term11 = term11_vec * z_axis_SP_RecPim;
+                                        double term22 = x_axis_SP_RecPim.Dot(Polariz_Spin_pip);
+                                        double Phi_s_RecPim = std::atan2(term11, term22);
+                                        // Sivers and Collins calculation
+                                        DeltaPhi_Collins_RecPim = Phi_HP_RecPim + Phi_s_RecPim;
+                                        DeltaPhi_Sivers_RecPim = Phi_HP_RecPim - Phi_s_RecPim;
+                                        if(DeltaPhi_Collins_RecPim < -TMath::Pi()){
+                                          DeltaPhi_Collins_RecPim += 2*TMath::Pi();
+                                        }
+                                        else if(DeltaPhi_Collins_RecPim > TMath::Pi()){
+                                          DeltaPhi_Collins_RecPim -= 2*TMath::Pi();
+                                        }
+                                        if(DeltaPhi_Sivers_RecPim < -TMath::Pi()){
+                                          DeltaPhi_Sivers_RecPim += 2*TMath::Pi();
+                                        }
+                                        else if(DeltaPhi_Sivers_RecPim > TMath::Pi()){
+                                          DeltaPhi_Sivers_RecPim -= 2*TMath::Pi();
+                                        }
+                                        // Not sure if these are correct, but I perform the cycles to restrict the values inside -pi,pi
+                                        SinCollins_RecPim = TMath::Sin(DeltaPhi_Collins_RecPim);
+                                        SinSivers_RecPim = TMath::Sin(DeltaPhi_Sivers_RecPim);
+                                        // plot
+                                        Delta_Collins_RecPim->Fill(DeltaPhi_Collins_RecPim, SinCollins_RecPim);
+                                        Delta_Collins_Area_RecPim->Fill(DeltaPhi_Collins_RecPim); // to normalize the other plot
+                                        Delta_Sivers_RecPim->Fill(DeltaPhi_Sivers_RecPim, SinSivers_RecPim);
+                                        Delta_Sivers_Area_RecPim->Fill(DeltaPhi_Sivers_RecPim);   // same here
+                                      }
+                                    } 
                                   }
                               }
                             }
@@ -997,8 +1304,6 @@ TString infile3="pythia8NCDIS_18x275_minQ2=1_beamEffects_xAngle=-0.025_hiDiv_4.1
                     }
                   }
                 }  
-              
-              
             }
         }
     } 
@@ -1041,7 +1346,7 @@ TString infile3="pythia8NCDIS_18x275_minQ2=1_beamEffects_xAngle=-0.025_hiDiv_4.1
     delete sivers;
 
     TCanvas* siversPol = new TCanvas("Sivers_Polarized", "Sivers effect analysis", 800, 600);
-    DeltaPhi_Polarized->Draw("E");
+    DeltaPhi_Pol_Sivers->Draw("E");
     siversPol->Update();
     siversPol->Write();
     delete siversPol;
@@ -1449,9 +1754,19 @@ TString infile3="pythia8NCDIS_18x275_minQ2=1_beamEffects_xAngle=-0.025_hiDiv_4.1
     //std::cout << "particelle generate nel range di rapidita': " << countEta << std::endl;
     std::cout << "the acceptance is: " << countEta / count  << std::endl;
     double A_ut = (spinUp-spinDown)/(spinUp+spinDown);
+    double A_ut_pim = (spinUp_pim-spinDown_pim)/(spinUp_pim+spinDown_pim);
+    std::cout << "" << std::endl;
+    std::cout << "         ****** Pi+ ******          " << std::endl;
+    std::cout << " " << std::endl;
     std::cout << "SpinUp: " << spinUp << std::endl;
     std::cout << "SpinDown: " << spinDown << std::endl;
     std::cout << "A_UT = " << A_ut << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "        ****** Pi- ******          " << std::endl;
+    std::cout << " " << std::endl;
+    std::cout << "SpinUp: " << spinUp_pim << std::endl;
+    std::cout << "SpinDown: " << spinDown_pim << std::endl;
+    std::cout << "A_UT = " << A_ut_pim << std::endl;
     std::cout << "______________________________________________________________________________________" << std::endl;
     std::cout << " " << std::endl;
     //std::cout << "dRICHx: " << dRICHx << ", dRICHy: " << dRICHy << std::endl;
